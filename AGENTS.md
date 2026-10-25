@@ -7,7 +7,7 @@ Shared rules for every teammate **and** every AI coding assistant (Claude Code, 
 BellAI places automated, friendly voice calls to elderly people to remind them about medicines, appointments, meals, hydration and daily tasks. It listens to the reply, records the outcome, and escalates to a caregiver when needed.
 
 ```
-Caregiver (Next.js form) ──REST──► FastAPI ──► DB (SQLite → Postgres)
+Caregiver (Next.js form) ──REST──► FastAPI ──► DB (SQLite on each machine for now)
                                      │
                          APScheduler polls due tasks
                                      │
@@ -21,19 +21,19 @@ Caregiver (Next.js form) ──REST──► FastAPI ──► DB (SQLite → Po
 
 Full flow: [docs/architecture.md](docs/architecture.md).
 
-## Repo layout & ownership
+## Team
 
-Each area has **one owner**. Work only inside your area on your branch; anything under "shared" needs a heads-up in the group chat before you change it.
+Ayush, Devesh, and Utkarsh. An earlier draft left the scheduler and caregiver alerts as a fourth seat. That work is the rest of the call path (place the call, read the webhook, update status, alert), so it sits with the voice owner.
+
+Each area has **one owner**. Work only inside your area on your branch. Anything under "shared" needs a heads-up in the group chat before you change it.
 
 | Area | Path | Owner | Branch prefix |
 |---|---|---|---|
-| Skeleton, shared contracts, integration | `AGENTS.md`, `docs/`, `backend/app/models.py`, `backend/app/schemas.py`, `frontend/src/lib/types.ts` | Ayush | `chore/…` |
-| Input layer (forms, caregiver UI) | `frontend/` | _TBD_ | `feat/frontend-…` |
-| Voice agent (Bolna agent, prompts, call + webhook) | `agent/`, `backend/app/services/bolna.py`, `backend/app/routers/webhooks.py` | _TBD_ | `feat/voice-…` |
-| Intermediate layer (scheduler, outcome logic, caregiver alerts) | `backend/app/services/scheduler.py`, `outcomes.py`, `notifications.py` | _TBD_ | `feat/scheduler-…` |
-| API routers (auth, profiles, tasks, calls) | `backend/app/routers/` (except webhooks) | _TBD_ | `feat/api-…` |
+| Caregiver UI | `frontend/` | Ayush | `feat/frontend-…` |
+| Call pipeline: Bolna agent, outbound call, webhook, scheduler, outcomes, caregiver alerts | `agent/`, `backend/app/services/bolna.py`, `backend/app/routers/webhooks.py`, `backend/app/services/scheduler.py`, `backend/app/services/outcomes.py`, `backend/app/services/notifications.py` | Devesh | `feat/voice-…` |
+| API, database, shared contracts | `backend/app/routers/` (except webhooks), `backend/app/db.py`, `backend/app/config.py`, `backend/app/main.py`, `backend/app/models.py`, `backend/app/schemas.py`, `docs/` | Utkarsh | `feat/api-…` for routers, `chore/…` for contracts, docs, and database config |
 
-**Shared contracts** (change together, in one small PR, announced first):
+**Shared contracts** (change together, in one small PR, announced first). Utkarsh owns the change. Ayush reviews `types.ts` because the UI consumes it.
 - `backend/app/models.py` — DB tables
 - `backend/app/schemas.py` — request/response shapes
 - `frontend/src/lib/types.ts` — must mirror `schemas.py`
@@ -56,6 +56,7 @@ Commit messages: `area: what changed`, e.g. `frontend: add medication task form`
 - Routers live in `app/routers/`, business logic in `app/services/`. Routers stay thin.
 - All datetimes are stored **naive UTC**. Convert to the elder's timezone only when speaking/displaying.
 - Config comes from env via `app/config.py` — never hard-code keys.
+- The database is a local SQLite file (`sqlite:///./bellai.db`). That is enough for the first users on one machine. Scaling to a shared hosted database later will need something like Postgres.
 - `BOLNA_MOCK=true` (default) fakes outbound calls so everyone can develop without spending credits.
 
 **Frontend (TypeScript, Next.js App Router)**

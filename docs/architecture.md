@@ -24,7 +24,7 @@
       [ FastAPI App ]
       ├── API Routers (Auth, Profiles, Tasks, Calls, Webhook)
       ├── APScheduler (polls due reminder tasks)
-      └── DB Layer (SQLModel → SQLite, Postgres later)
+      └── DB Layer (SQLModel → SQLite on each machine for now)
              │
              ├──► Outbound: Bolna REST API (POST /call)
              └──◄ Inbound:  Bolna webhook (POST /api/webhook/call-outcome)
@@ -53,3 +53,5 @@ Shapes are defined in `backend/app/schemas.py` (live at `/docs`) and mirrored in
 - **TrustedContact** — elder_id, name, phone, relation, notify_on_missed
 - **Task** — elder_id, type, title, details, scheduled_at (next due, UTC), recurrence, status, attempts, max_attempts, retry_minutes
 - **CallLog** — task_id, bolna_call_id, status, outcome, transcript, summary
+
+SQLite on the API machine is enough for the first users. Scaling later will need a hosted database such as Postgres.

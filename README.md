@@ -2,7 +2,9 @@
 
 Bell AI is an AI-based voice assistant that helps elderly people live independently. It places automated calls to remind them to take medicines on time, attend medical appointments, and complete other essential tasks. Voice AI keeps the conversation natural, so they can respond to reminders, ask questions and confirm tasks are done.
 
-**Team:** BellAI · **Stack:** FastAPI (Python) · Next.js (TypeScript) · Bolna voice AI · APScheduler · SQLite/Postgres
+**Team:** Ayush (caregiver UI) · Devesh (call pipeline) · Utkarsh (API, database, shared contracts)
+
+**Stack:** FastAPI (Python) · Next.js (TypeScript) · Bolna voice AI · APScheduler · SQLite
 
 Read [AGENTS.md](AGENTS.md) for ownership, branching and conventions before contributing.
 

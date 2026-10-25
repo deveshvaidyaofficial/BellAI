@@ -1,4 +1,4 @@
-"""Polls for due tasks and places calls. Owner: intermediate layer."""
+"""Polls for due tasks and places calls. Owner: Devesh."""
 
 import logging
 
@@ -39,7 +39,7 @@ def place_call(session: Session, task: Task) -> CallLog:
 
 
 def poll_due_tasks() -> None:
-    # TODO(intermediate): respect elder.call_window_start/end in the elder's timezone.
+    # TODO(voice): respect elder.call_window_start/end in the elder's timezone.
     with Session(engine) as session:
         due = session.exec(
             select(Task).where(
