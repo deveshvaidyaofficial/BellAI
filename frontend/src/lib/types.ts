@@ -1,0 +1,63 @@
+// SHARED CONTRACT — mirrors backend/app/schemas.py. Change both together.
+
+export type TaskType = "medication" | "appointment" | "meal" | "hydration" | "other";
+export type Recurrence = "none" | "daily" | "weekly";
+export type TaskStatus = "pending" | "calling" | "completed" | "snoozed" | "needs_help" | "missed";
+export type CallOutcome = "completed" | "later" | "needs_help" | "no_answer";
+
+export interface ElderCreate {
+  name: string;
+  phone: string;
+  language?: string;
+  timezone?: string;
+  call_window_start?: string;
+  call_window_end?: string;
+  notes?: string | null;
+}
+
+export interface Elder extends Required<ElderCreate> {
+  id: number;
+  created_at: string;
+}
+
+export interface ContactCreate {
+  name: string;
+  phone: string;
+  relation?: string | null;
+  notify_on_missed?: boolean;
+}
+
+export interface Contact extends ContactCreate {
+  id: number;
+  elder_id: number;
+}
+
+export interface TaskCreate {
+  elder_id: number;
+  type: TaskType;
+  title: string;
+  details?: string | null;
+  scheduled_at: string; // ISO 8601; backend stores UTC
+  recurrence?: Recurrence;
+  max_attempts?: number;
+  retry_minutes?: number;
+}
+
+export interface Task extends Required<TaskCreate> {
+  id: number;
+  status: TaskStatus;
+  attempts: number;
+  created_at: string;
+}
+
+export interface CallLog {
+  id: number;
+  task_id: number;
+  bolna_call_id: string | null;
+  status: string;
+  outcome: CallOutcome | null;
+  transcript: string | null;
+  summary: string | null;
+  created_at: string;
+  updated_at: string;
+}
