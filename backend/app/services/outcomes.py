@@ -1,4 +1,4 @@
-"""What happens to a task after a call. Owner: intermediate layer.
+"""What happens to a task after a call. Owner: Devesh.
 
 See the status lifecycle in AGENTS.md.
 """

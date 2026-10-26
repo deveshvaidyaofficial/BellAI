@@ -1,4 +1,4 @@
-"""Outbound calls via Bolna. Owner: voice agent.
+"""Outbound calls via Bolna. Owner: Devesh.
 
 Docs: https://docs.bolna.ai — POST /call starts an outbound call for an agent.
 With BOLNA_MOCK=true no request is sent; a fake call id is returned.

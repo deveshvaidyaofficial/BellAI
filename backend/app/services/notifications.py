@@ -1,4 +1,4 @@
-"""Caregiver alerts. Owner: intermediate layer.
+"""Caregiver alerts. Owner: Devesh.
 
 Prototype just logs. TODO: SMS / WhatsApp (e.g. Twilio, Gupshup) or a Bolna call to the contact.
 """
