@@ -1,4 +1,9 @@
-"""Polls for due tasks and places calls. Owner: Devesh."""
+"""Due reminders, retries, and when a call is authorized. Owner: Ayush.
+
+The provider request is Devesh's client (`bolna.trigger_call`). This module
+stores the execution id he returns and does not call a task that is already
+calling, cancelled, or finished.
+"""
 
 import logging
 
@@ -39,7 +44,7 @@ def place_call(session: Session, task: Task) -> CallLog:
 
 
 def poll_due_tasks() -> None:
-    # TODO(voice): respect elder.call_window_start/end in the elder's timezone.
+    # TODO(scheduler): respect elder.call_window_start/end in the elder's timezone.
     with Session(engine) as session:
         due = session.exec(
             select(Task).where(

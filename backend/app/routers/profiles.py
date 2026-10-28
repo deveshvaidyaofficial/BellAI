@@ -1,3 +1,5 @@
+"""Elder and trusted-contact routes. Owner: Utkarsh."""
+
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException
