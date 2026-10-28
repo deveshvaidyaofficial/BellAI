@@ -1,4 +1,8 @@
-"""What happens to a task after a call. Owner: Devesh.
+"""After a call. Two owners, one file.
+
+`classify` (Utkarsh) maps a Bolna status and extracted outcome onto the shared
+categories. `apply_outcome` (Ayush) is the only place a task changes status,
+including retry, snooze, and when a caregiver alert is required.
 
 See the status lifecycle in AGENTS.md.
 """

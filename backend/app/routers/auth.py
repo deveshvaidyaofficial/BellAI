@@ -1,4 +1,4 @@
-"""Auth placeholder. TODO: OTP or Google login for caregivers."""
+"""Auth placeholder. Owner: Utkarsh. TODO: OTP or Google login for caregivers."""
 
 from fastapi import APIRouter, HTTPException
 

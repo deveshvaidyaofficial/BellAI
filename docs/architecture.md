@@ -2,18 +2,19 @@
 
 ## System flow
 
-1. **Setup (frontend):** caregiver registers the elder, trusted contacts, preferred language, calling window. _Later: OTP / Google login._
-2. **Input layer (frontend):** forms to store medication reminders, appointments, meals, hydration, daily tasks. _Later: vision model reads prescriptions/schedules._
-3. **Reminder trigger (backend `services/scheduler.py`):** APScheduler polls every `SCHEDULER_INTERVAL_SECONDS` for due tasks.
-4. **Automated call (backend `services/bolna.py`):** `POST https://api.bolna.ai/call` with the elder's phone and task context.
-5. **Conversation (Bolna agent, `agent/prompts/`):** greets, delivers the reminder, answers simple questions, confirms.
-6. **Understand response (backend `routers/webhooks.py` → `services/outcomes.py`):**
+1. **Setup (Ayush, frontend):** caregiver registers the elder, trusted contacts, preferred language, calling window. _Later: OTP / Google login._
+2. **Input layer (Ayush, frontend):** forms to store medication reminders, appointments, meals, hydration, daily tasks. The reminder HTTP routes are his too. Elder, contact, and call-log routes are Utkarsh's. _Later: vision model reads prescriptions/schedules._
+3. **Reminder trigger (Ayush, `services/scheduler.py`):** APScheduler polls every `SCHEDULER_INTERVAL_SECONDS` for due tasks. Ayush owns eligibility, quiet hours, cancellation, retries, and the task state machine.
+4. **Automated call (Devesh, `services/bolna.py`):** `POST https://api.bolna.ai/call` with the elder's phone and task context. Returns Bolna's execution id. `BOLNA_MOCK=true` skips the real call.
+5. **Conversation (Devesh, `agent/prompts/`):** greets, delivers the reminder, answers simple questions, confirms, and extracts the structured outcome.
+6. **Callback (Utkarsh, `routers/webhooks.py`):** match the execution id, skip duplicate and intermediate callbacks, and map the payload onto the shared outcome (`classify` in `services/outcomes.py`).
+7. **State change (Ayush, `apply_outcome` in `services/outcomes.py`):**
    - `completed` → mark done (recurring tasks roll to next occurrence)
    - `later` → snooze, re-call after `snooze_minutes`
-   - `needs_help` → mark, notify caregiver
-   - no answer / busy / failed → retry up to `max_attempts`, then `missed` + notify caregiver
-7. **Record & monitor:** every call is a `CallLog` row (status, outcome, transcript, summary).
-8. **Caregiver support (`services/notifications.py`):** alerts for missed reminders / help requests. _Prototype logs only; later SMS/WhatsApp._
+   - `needs_help` → mark, and require a caregiver alert
+   - no answer / busy / failed → retry up to `max_attempts`, then `missed`, and require a caregiver alert
+8. **Record (Utkarsh):** every call is a `CallLog` row (status, outcome, transcript, summary), keyed by the Bolna execution id.
+9. **Caregiver alert (Utkarsh, `services/notifications.py`):** send the alert when Ayush's rules require it, and record whether delivery worked. _Prototype logs only; later SMS/WhatsApp._
 
 ## Backend flow
 

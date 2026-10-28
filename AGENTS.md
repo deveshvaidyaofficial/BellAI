@@ -23,21 +23,35 @@ Full flow: [docs/architecture.md](docs/architecture.md).
 
 ## Team
 
-Ayush, Devesh, and Utkarsh. An earlier draft left the scheduler and caregiver alerts as a fourth seat. That work is the rest of the call path (place the call, read the webhook, update status, alert), so it sits with the voice owner.
-
-Each area has **one owner**. Work only inside your area on your branch. Anything under "shared" needs a heads-up in the group chat before you change it.
+Ayush, Devesh, and Utkarsh. The call path is three owners. Each area has **one owner**. Work only inside your area on your branch. Anything under "shared" needs a heads-up in the group chat before you change it.
 
 | Area | Path | Owner | Branch prefix |
 |---|---|---|---|
 | Caregiver UI | `frontend/` | Ayush | `feat/frontend-…` |
-| Call pipeline: Bolna agent, outbound call, webhook, scheduler, outcomes, caregiver alerts | `agent/`, `backend/app/services/bolna.py`, `backend/app/routers/webhooks.py`, `backend/app/services/scheduler.py`, `backend/app/services/outcomes.py`, `backend/app/services/notifications.py` | Devesh | `feat/voice-…` |
-| API, database, shared contracts | `backend/app/routers/` (except webhooks), `backend/app/db.py`, `backend/app/config.py`, `backend/app/main.py`, `backend/app/models.py`, `backend/app/schemas.py`, `docs/` | Utkarsh | `feat/api-…` for routers, `chore/…` for contracts, docs, and database config |
+| Scheduler, retries, reminder state, and the reminder HTTP routes (including call-now) | `backend/app/services/scheduler.py`, `apply_outcome` in `backend/app/services/outcomes.py`, `backend/app/routers/tasks.py` | Ayush | `feat/scheduler-…` |
+| Voice agent and outbound calls. Bolna agent, prompt, languages, extraction fields. Bolna client, mock mode, execution ids, call errors. | `agent/`, `backend/app/services/bolna.py` | Devesh | `feat/voice-…` |
+| Webhooks, outcome normalization, caregiver alerts, elder and contact routes, call-log reads, auth stub | `backend/app/routers/webhooks.py`, `classify` in `backend/app/services/outcomes.py`, `backend/app/services/notifications.py`, `backend/app/routers/profiles.py`, `backend/app/routers/calls.py`, `backend/app/routers/auth.py` | Utkarsh | `feat/webhook-…` |
 
-**Shared contracts** (change together, in one small PR, announced first). Utkarsh owns the change. Ayush reviews `types.ts` because the UI consumes it.
-- `backend/app/models.py` — DB tables
-- `backend/app/schemas.py` — request/response shapes
-- `frontend/src/lib/types.ts` — must mirror `schemas.py`
-- `backend/app/main.py` — only add a line to register a new router
+How the three meet:
+
+1. Ayush decides a reminder is due and calls Devesh's outbound client with the elder's phone and the reminder context.
+2. Devesh places the call (or the mock call) and returns the provider execution id, or a failure (timeout, auth, rejected request, malformed response). Ayush stores that result on the attempt.
+3. Bolna calls Utkarsh's webhook. Utkarsh matches the execution id, ignores duplicates and intermediate updates, and maps the payload onto the shared outcome.
+4. Utkarsh hands that outcome to Ayush. Ayush applies the state change: reschedule, retry, or stop. Ayush's rules say when a caregiver must be told.
+5. Utkarsh sends that alert and records whether delivery worked.
+
+The same task id and Bolna execution id (`bolna_call_id`) are used the whole way through.
+
+**Shared contracts** (change together, in one small PR, announced first). All three agree before the PR is opened.
+- `backend/app/models.py` — tables. Ayush proposes reminder columns and status values. Utkarsh proposes call-log columns. Devesh proposes the execution-id field.
+- `backend/app/schemas.py` — request and response shapes, including the webhook body and the outcome names.
+- `frontend/src/lib/types.ts` — must mirror `schemas.py`. Ayush updates this file in that same PR.
+- `backend/app/main.py` — only add a line to register a new router.
+- `backend/app/db.py`, `backend/app/config.py` — local database and env. Heads-up before editing.
+
+Stored outcome codes today are `completed`, `later`, `needs_help`, and `no_answer`. The names the three of us use in discussion map onto them like this: completed; requested-later → `later`; help-needed → `needs_help`; no-answer and failed-call → `no_answer`; unresolved → `needs_help` until we split it. Renaming the stored codes is a shared-contract change, not a one-person edit.
+
+`docs/` is shared. Heads-up in the group chat before editing it.
 
 ## Git workflow (how we avoid merge conflicts)
 
@@ -64,17 +78,22 @@ Commit messages: `area: what changed`, e.g. `frontend: add medication task form`
 - Types in `src/lib/types.ts` mirror `backend/app/schemas.py`.
 - Client components only where you need state/forms (`"use client"`).
 
-**Voice agent**
+**Voice agent (Devesh)**
 - The Bolna agent's prompt lives in `agent/prompts/` (versioned in git, pasted into the Bolna dashboard).
-- The agent must extract a structured `outcome` (`completed | later | needs_help`) plus optional `snooze_minutes` and `note`. The backend depends on these exact keys — see `agent/README.md`.
+- The agent must extract a structured `outcome` (`completed | later | needs_help`) plus optional `snooze_minutes` and `note`. Utkarsh's webhook reads these exact keys — see `agent/README.md`.
 
-## Task status lifecycle (source of truth)
+**Reminder rules (Ayush)**
+- Only Ayush moves a task between statuses. A due task becomes `calling` only when a call is authorized. A cancelled task, a task already `calling`, and a task already resolved are not called again.
+- Quiet hours are the elder's `call_window_start` / `call_window_end` in the elder's timezone.
+- `later` snoozes. `needs_help` stops and asks Utkarsh to alert the caregiver. `no_answer` retries until `max_attempts`, then `missed`, which also alerts the caregiver.
+
+## Task status lifecycle (source of truth, Ayush)
 
 ```
-pending ──scheduler──► calling ──webhook──► completed   (recurring → back to pending at next time)
-                          │                 snoozed     (outcome "later": re-call after snooze_minutes)
-                          │                 needs_help  (caregiver notified)
-                          └──no answer──►   pending again (retry) … after max_attempts → missed (caregiver notified)
+pending ──Ayush's scheduler──► calling ──Utkarsh's webhook──► completed   (recurring → back to pending at next time)
+                                  │                            snoozed     (outcome "later": re-call after snooze_minutes)
+                                  │                            needs_help  (Utkarsh alerts the caregiver)
+                                  └──no answer──►              pending again (retry) … after max_attempts → missed (caregiver alerted)
 ```
 
 ## Running locally

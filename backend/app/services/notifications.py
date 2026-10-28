@@ -1,4 +1,7 @@
-"""Caregiver alerts. Owner: Devesh.
+"""Caregiver alerts. Owner: Utkarsh.
+
+Ayush's `apply_outcome` decides when an alert is required. This module sends
+it and, later, records whether delivery worked.
 
 Prototype just logs. TODO: SMS / WhatsApp (e.g. Twilio, Gupshup) or a Bolna call to the contact.
 """

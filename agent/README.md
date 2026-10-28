@@ -1,6 +1,6 @@
 # Voice agent (Bolna)
 
-Owner: Devesh. The agent itself is configured in the [Bolna dashboard](https://platform.bolna.ai); this folder versions its prompt and settings so they're reviewable in git.
+Owner: Devesh (voice agent and outbound calls). The agent itself is configured in the [Bolna dashboard](https://platform.bolna.ai); this folder versions its prompt, languages, and extraction fields so they're reviewable in git.
 
 ## Setup checklist
 

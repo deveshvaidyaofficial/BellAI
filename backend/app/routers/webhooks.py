@@ -1,4 +1,4 @@
-"""Bolna posts call results here. Owner: Devesh.
+"""Bolna posts call results here. Owner: Utkarsh.
 
 Set this URL as the agent's webhook in the Bolna dashboard. For local dev, expose it
 with `ngrok http 8000` and use https://<id>.ngrok.app/api/webhook/call-outcome.
