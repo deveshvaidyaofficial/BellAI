@@ -1,7 +1,8 @@
 """Caregiver alerts. Owner: Utkarsh.
 
 Ayush's `apply_outcome` decides when an alert is required. This module sends
-it. The result is returned to the caller. It is not stored yet.
+it and returns the result. `format_delivery_result` turns that list into the
+`CallLog.delivery_result` string. Nothing here writes the column.
 
 `MockSender` is the default. A later SMS or WhatsApp provider can implement
 `send(to, message)` without changing the alert text.
@@ -52,6 +53,20 @@ class MockSender:
 
 
 default_sender = MockSender()
+
+
+def format_delivery_result(results: List[DeliveryResult]) -> Optional[str]:
+    """Stored CallLog.delivery_result. Empty means no alert. Does not write the row."""
+    if not results:
+        return None
+    if all(result.status == "sent" for result in results):
+        return "sent"
+    reasons: List[str] = []
+    for result in results:
+        if result.status == "sent":
+            continue
+        reasons.append((result.detail or "").strip() or "failed")
+    return "failed: {reasons}".format(reasons="; ".join(reasons))
 
 
 def _contacts(session: Session, elder_id: int) -> List[TrustedContact]:

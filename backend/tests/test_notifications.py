@@ -6,11 +6,12 @@ import pytest
 from sqlalchemy.pool import StaticPool
 from sqlmodel import Session, SQLModel, create_engine
 
-from app.models import CallOutcome, Elder, Task, TrustedContact
+from app.models import CallLog, CallOutcome, Elder, Task, TrustedContact
 from app.services.notifications import (
     DeliveryResult,
     MockSender,
     default_sender,
+    format_delivery_result,
     notify_caregivers,
     send_caregiver_alert,
 )
@@ -131,3 +132,31 @@ def test_existing_notify_hook_uses_the_sender(session):
     assert "elder asked for help" in sender.sent[0].message
     assert "Take BP tablet" in sender.sent[0].message
     assert "Asha" in sender.sent[0].message
+
+
+def test_format_delivery_result_for_storage():
+    assert format_delivery_result([]) is None
+    assert format_delivery_result([
+        DeliveryResult("sent", "+919811110000", None),
+        DeliveryResult("sent", "+919822220000", None),
+    ]) == "sent"
+    assert format_delivery_result([
+        DeliveryResult("failed", None, "no caregiver to notify"),
+    ]) == "failed: no caregiver to notify"
+    assert format_delivery_result([
+        DeliveryResult("sent", "+919811110000", None),
+        DeliveryResult("failed", "+919822220000", "gateway down"),
+        DeliveryResult("failed", "", "missing phone"),
+    ]) == "failed: gateway down; missing phone"
+
+
+def test_call_log_can_store_the_formatted_result(session):
+    task = _task(session, ["+919811110000"])
+    row = CallLog(
+        task_id=task.id,
+        delivery_result=format_delivery_result([DeliveryResult("sent", "+919811110000", None)]),
+    )
+    session.add(row)
+    session.commit()
+    session.refresh(row)
+    assert row.delivery_result == "sent"
