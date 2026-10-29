@@ -13,8 +13,8 @@ from typing import Any, Optional
 
 from sqlmodel import Session
 
-from app.models import CallOutcome, Recurrence, Task, TaskStatus, utcnow
-from app.services.notifications import notify_caregivers
+from app.models import CallLog, CallOutcome, Recurrence, Task, TaskStatus, utcnow
+from app.services.notifications import format_delivery_result, send_caregiver_alert
 
 DEFAULT_SNOOZE_MINUTES = 30
 
@@ -73,17 +73,28 @@ def roll_to_next_occurrence(task: Task, now: datetime) -> None:
     task.attempts = 0
 
 
+def _alert(session: Session, task: Task, outcome: CallOutcome, call: Optional[CallLog]) -> None:
+    results = send_caregiver_alert(session, task, outcome)
+    if call is not None:
+        call.delivery_result = format_delivery_result(results)
+        session.add(call)
+
+
 def apply_outcome(
     session: Session,
     task: Task,
     outcome: CallOutcome,
     snooze_minutes: Any = None,
+    call: Optional[CallLog] = None,
 ) -> Task:
     """Apply a call result to a task.
 
     Recurring tasks never stop: after `needs_help` or the final missed attempt the
     caregiver is alerted, the task shows `needs_help` / `missed`, and it is
     already rolled to its next occurrence, where the scheduler picks it up again.
+
+    When an alert goes out, whether it was delivered is saved on `call` (the
+    call this outcome came from), if one is given.
     """
     now = utcnow()
     recurring = task.recurrence != Recurrence.none
@@ -103,7 +114,7 @@ def apply_outcome(
 
     elif outcome == CallOutcome.needs_help:
         task.status = TaskStatus.needs_help
-        notify_caregivers(session, task, "elder asked for help")
+        _alert(session, task, outcome, call)
         if recurring:
             roll_to_next_occurrence(task, now)
 
@@ -113,7 +124,7 @@ def apply_outcome(
             task.status = TaskStatus.pending
         else:
             task.status = TaskStatus.missed
-            notify_caregivers(session, task, f"no answer after {task.attempts} attempts")
+            _alert(session, task, outcome, call)
             if recurring:
                 roll_to_next_occurrence(task, now)
 

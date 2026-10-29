@@ -133,3 +133,4 @@ fieldset.inline input { width: auto; }
 .check { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
 .check input { width: auto; }
 .row > .error { flex-basis: 100%; margin: 0; }
+.ok { color: var(--ok); }

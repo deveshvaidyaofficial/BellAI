@@ -308,3 +308,33 @@ def test_resolve_one_off_and_recurring(client):
     resolved = client.post(f"/api/tasks/{daily['id']}/resolve").json()
     assert resolved["status"] == "pending"
     assert datetime.fromisoformat(resolved["scheduled_at"]) > datetime.utcnow()
+
+
+# ---- caregiver alerts ----
+
+def test_alert_delivery_is_saved_on_the_call(client):
+    elder = _elder(client)
+    client.post(f"/api/elders/{elder['id']}/contacts", json={"name": "Rohan", "phone": "+919800000002"})
+    task = _task(client, elder["id"])
+    call = client.post(f"/api/tasks/{task['id']}/call-now").json()
+    _reply(client, call["bolna_call_id"], outcome="needs_help")
+    assert _calls(client, task["id"])[0]["delivery_result"] == "sent"
+
+
+def test_final_missed_attempt_records_failed_alert_without_contacts(client):
+    elder = _elder(client)
+    task = _task(client, elder["id"], max_attempts=1)
+    call = client.post(f"/api/tasks/{task['id']}/call-now").json()
+    _reply(client, call["bolna_call_id"], status="no-answer")
+    assert _calls(client, task["id"])[0]["delivery_result"] == "failed: no caregiver to notify"
+
+
+def test_retry_and_completed_send_no_alert(client):
+    elder = _elder(client)
+    client.post(f"/api/elders/{elder['id']}/contacts", json={"name": "Rohan", "phone": "+919800000002"})
+    task = _task(client, elder["id"], max_attempts=2)
+    first = client.post(f"/api/tasks/{task['id']}/call-now").json()
+    _reply(client, first["bolna_call_id"], status="no-answer")
+    second = client.post(f"/api/tasks/{task['id']}/call-now").json()
+    _reply(client, second["bolna_call_id"], outcome="completed")
+    assert [c["delivery_result"] for c in _calls(client, task["id"])] == [None, None]

@@ -106,7 +106,7 @@ def place_call(session: Session, task: Task) -> CallLog:
         log.error("call failed for task %s: %s", task.id, e)
         log_row.status = "failed"
         log_row.outcome = CallOutcome.no_answer
-        apply_outcome(session, task, CallOutcome.no_answer)
+        apply_outcome(session, task, CallOutcome.no_answer, call=log_row)
 
     session.add(task)
     session.add(log_row)
@@ -132,7 +132,7 @@ def expire_stale_calls(session: Session, now: datetime) -> int:
             last.updated_at = now
             session.add(last)
         log.warning("task %s: no webhook after %s min, treating as no answer", task.id, CALL_TIMEOUT_MINUTES)
-        apply_outcome(session, task, CallOutcome.no_answer)
+        apply_outcome(session, task, CallOutcome.no_answer, call=last)
         expired += 1
     session.commit()
     return expired

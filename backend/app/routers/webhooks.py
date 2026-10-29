@@ -71,7 +71,7 @@ def call_outcome(body: BolnaWebhook, session: Session = Depends(get_session)):
         # is moved, and that move stays in Ayush's apply_outcome.
         call.outcome = classify(status, extracted.get("outcome"))
         if task is not None and task.status == TaskStatus.calling:
-            apply_outcome(session, task, call.outcome, extracted.get("snooze_minutes"))
+            apply_outcome(session, task, call.outcome, extracted.get("snooze_minutes"), call=call)
             applied = True
 
     session.add(call)
