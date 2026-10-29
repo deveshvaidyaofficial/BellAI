@@ -123,3 +123,13 @@ fieldset.inline input { width: auto; }
   .pair { grid-template-columns: 1fr; }
   .nav { padding: 12px 16px; }
 }
+
+/* login */
+.login { max-width: 420px; margin: 32px auto 0; }
+.login form { max-width: none; }
+.link { background: none; border: 0; padding: 0; font: inherit; color: inherit; text-decoration: underline; cursor: pointer; }
+.divider { display: flex; align-items: center; gap: 12px; color: var(--mute); font-size: 14px; margin: 24px 0 16px; }
+.divider::before, .divider::after { content: ""; flex: 1; border-top: 1px solid var(--line); }
+.check { display: inline-flex; align-items: center; gap: 6px; font-size: 14px; }
+.check input { width: auto; }
+.row > .error { flex-basis: 100%; margin: 0; }

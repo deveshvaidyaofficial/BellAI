@@ -1,11 +1,15 @@
 // The only place the frontend talks to the backend.
+import { getToken } from "./session";
 import type {
+  AuthSession,
   CallLog,
+  Caregiver,
   Contact,
   ContactCreate,
   Elder,
   ElderCreate,
   ElderUpdate,
+  OtpRequestResponse,
   Task,
   TaskCreate,
   TaskUpdate,
@@ -24,7 +28,11 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
   try {
     res = await fetch(`${BASE}${path}`, {
       ...init,
-      headers: { "Content-Type": "application/json", ...init?.headers },
+      headers: {
+        "Content-Type": "application/json",
+        ...(getToken() && { Authorization: `Bearer ${getToken()}` }),
+        ...init?.headers,
+      },
       cache: "no-store",
     });
   } catch {
@@ -50,12 +58,22 @@ const send = <T>(method: string, path: string, body?: unknown) =>
 export const errorText = (e: unknown) => (e instanceof Error ? e.message : String(e));
 
 export const api = {
+  requestOtp: (phone: string) => send<OtpRequestResponse>("POST", "/api/auth/otp/request", { phone }),
+  verifyOtp: (phone: string, code: string) => send<AuthSession>("POST", "/api/auth/otp/verify", { phone, code }),
+  googleLogin: (idToken: string) => send<AuthSession>("POST", "/api/auth/google", { id_token: idToken }),
+  me: () => request<Caregiver>("/api/auth/me"),
+
   listElders: () => request<Elder[]>("/api/elders"),
   getElder: (id: number) => request<Elder>(`/api/elders/${id}`),
   createElder: (body: ElderCreate) => send<Elder>("POST", "/api/elders", body),
   updateElder: (id: number, body: ElderUpdate) => send<Elder>("PATCH", `/api/elders/${id}`, body),
   listContacts: (elderId: number) => request<Contact[]>(`/api/elders/${elderId}/contacts`),
+  deleteElder: (id: number) => send<void>("DELETE", `/api/elders/${id}`),
   addContact: (elderId: number, body: ContactCreate) => send<Contact>("POST", `/api/elders/${elderId}/contacts`, body),
+  updateContact: (elderId: number, contactId: number, body: Partial<ContactCreate>) =>
+    send<Contact>("PATCH", `/api/elders/${elderId}/contacts/${contactId}`, body),
+  deleteContact: (elderId: number, contactId: number) =>
+    send<void>("DELETE", `/api/elders/${elderId}/contacts/${contactId}`),
 
   listTasks: (elderId?: number) => request<Task[]>(`/api/tasks${elderId ? `?elder_id=${elderId}` : ""}`),
   getTask: (id: number) => request<Task>(`/api/tasks/${id}`),
