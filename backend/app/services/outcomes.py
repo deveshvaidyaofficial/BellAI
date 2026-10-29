@@ -23,9 +23,27 @@ NO_ANSWER_STATUSES = {"no-answer", "busy", "failed", "canceled", "call-disconnec
 
 
 def classify(provider_status: Optional[str], extracted_outcome: Optional[str]) -> CallOutcome:
-    if extracted_outcome in CallOutcome.__members__:
-        return CallOutcome(extracted_outcome)
-    if provider_status in NO_ANSWER_STATUSES:
+    def _clean(value: Optional[str]) -> Optional[str]:
+        if value is None:
+            return None
+        text = value.strip().lower()
+        return text or None
+
+    # Discussion names. The stored codes stay completed, later, needs_help, no_answer.
+    aliases = {
+        "requested-later": CallOutcome.later,
+        "help-needed": CallOutcome.needs_help,
+        "unresolved": CallOutcome.needs_help,
+        "no-answer": CallOutcome.no_answer,
+        "failed-call": CallOutcome.no_answer,
+    }
+    status = _clean(provider_status)
+    outcome = _clean(extracted_outcome)
+    if outcome in aliases:
+        return aliases[outcome]
+    if outcome in CallOutcome.__members__:
+        return CallOutcome(outcome)
+    if status in NO_ANSWER_STATUSES:
         return CallOutcome.no_answer
     # Call connected but the agent couldn't tell — treat as needing a human.
     return CallOutcome.needs_help
