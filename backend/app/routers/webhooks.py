@@ -5,9 +5,11 @@ with `ngrok http 8000` and use https://<id>.ngrok.app/api/webhook/call-outcome.
 
 An unknown execution id is acknowledged with HTTP 200 and `ok: false` so the
 provider does not retry a call we never placed. A shared-secret check is not
-wired yet; see the proposed `BOLNA_WEBHOOK_SECRET` setting.
+wired. The header name, if one is added later, is the placeholder
+`X-Bolna-Webhook-Secret`.
 """
 
+import logging
 from typing import Optional
 
 from fastapi import APIRouter, Depends
@@ -19,6 +21,7 @@ from app.schemas import BolnaWebhook
 from app.services.outcomes import apply_outcome, classify
 
 router = APIRouter(prefix="/api/webhook", tags=["webhook"])
+log = logging.getLogger(__name__)
 
 # Bolna sends intermediate updates too; only the first terminal update moves the task.
 TERMINAL_STATUSES = {"completed", "no-answer", "busy", "failed", "canceled", "call-disconnected"}
@@ -38,7 +41,9 @@ def call_outcome(body: BolnaWebhook, session: Session = Depends(get_session)):
         return {"ok": False, "reason": "unknown call id"}
 
     task = session.get(Task, call.task_id)
-    # Already applied. A repeat, or an earlier update that arrives late, must
+    if task is None:
+        log.warning("webhook for bolna call %s has no task %s", body.id, call.task_id)
+    # Already recorded. A repeat, or an earlier update that arrives late, must
     # not move the task again or replace the terminal status.
     if call.outcome is not None:
         return {
@@ -59,11 +64,15 @@ def call_outcome(body: BolnaWebhook, session: Session = Depends(get_session)):
     call.updated_at = utcnow()
 
     applied = False
-    if status in TERMINAL_STATUSES and task is not None and task.status == TaskStatus.calling:
+    if status in TERMINAL_STATUSES:
         extracted = body.extracted_data or {}
+        # Store the outcome even when the task is gone or no longer calling, so a
+        # later callback cannot overwrite this call. Only a task still `calling`
+        # is moved, and that move stays in Ayush's apply_outcome.
         call.outcome = classify(status, extracted.get("outcome"))
-        apply_outcome(session, task, call.outcome, extracted.get("snooze_minutes"))
-        applied = True
+        if task is not None and task.status == TaskStatus.calling:
+            apply_outcome(session, task, call.outcome, extracted.get("snooze_minutes"))
+            applied = True
 
     session.add(call)
     session.commit()

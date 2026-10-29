@@ -1,5 +1,6 @@
 """Bolna callback hardening. Owner: Utkarsh."""
 
+import logging
 import os
 from datetime import datetime, timedelta
 
@@ -119,3 +120,60 @@ def test_late_intermediate_update_does_not_overwrite_a_terminal_status(client):
     log = client.get(f"/api/calls?task_id={task['id']}").json()[0]
     assert log["status"] == "completed"
     assert log["summary"] is None
+
+
+def test_callback_for_a_deleted_task_logs_and_returns_200(client, caplog):
+    task, call_id = _start_call(client)
+    assert client.delete(f"/api/tasks/{task['id']}").status_code == 204
+
+    with caplog.at_level(logging.WARNING, logger="app.routers.webhooks"):
+        res = client.post(
+            "/api/webhook/call-outcome",
+            json={"id": call_id, "status": "completed", "extracted_data": {"outcome": "completed"}},
+        )
+
+    assert res.status_code == 200
+    body = res.json()
+    assert body["ok"] is True
+    assert body["applied"] is False
+    assert body["task_status"] is None
+    assert call_id in caplog.text
+    assert str(task["id"]) in caplog.text
+
+
+def test_finished_status_is_saved_when_the_task_is_not_calling(client):
+    task, call_id = _start_call(client)
+    moved = client.patch(f"/api/tasks/{task['id']}", json={"status": "pending"}).json()
+    assert moved["status"] == "pending"
+
+    first = client.post(
+        "/api/webhook/call-outcome",
+        json={"id": call_id, "status": "no-answer"},
+    ).json()
+    assert first["applied"] is False
+    assert first["outcome"] == "no_answer"
+    assert first["task_status"] == "pending"
+    saved = client.get(f"/api/tasks/{task['id']}").json()
+    assert saved["status"] == "pending"
+    assert saved["attempts"] == 1
+    log = client.get(f"/api/calls?task_id={task['id']}").json()[0]
+    assert log["status"] == "no-answer"
+    assert log["outcome"] == "no_answer"
+
+    second = client.post(
+        "/api/webhook/call-outcome",
+        json={
+            "id": call_id,
+            "status": "completed",
+            "extracted_data": {"outcome": "needs_help"},
+            "transcript": "late copy",
+        },
+    ).json()
+    assert second["duplicate"] is True
+    assert second["applied"] is False
+    assert second["outcome"] == "no_answer"
+    assert client.get(f"/api/tasks/{task['id']}").json()["status"] == "pending"
+    log = client.get(f"/api/calls?task_id={task['id']}").json()[0]
+    assert log["outcome"] == "no_answer"
+    assert log["status"] == "no-answer"
+    assert log["transcript"] is None
