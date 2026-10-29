@@ -102,6 +102,7 @@ class CallLogRead(SQLModel):
     outcome: Optional[CallOutcome]
     transcript: Optional[str]
     summary: Optional[str]
+    delivery_result: Optional[str] = None
     created_at: datetime
     updated_at: datetime
 
