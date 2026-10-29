@@ -90,3 +90,21 @@ class CallLog(SQLModel, table=True):
     summary: Optional[str] = None
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = Field(default_factory=utcnow)
+
+
+class Caregiver(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    name: str
+    phone: Optional[str] = Field(default=None, unique=True, index=True)
+    email: Optional[str] = Field(default=None, unique=True, index=True)
+    google_sub: Optional[str] = Field(default=None, unique=True, index=True)
+    created_at: datetime = Field(default_factory=utcnow)
+
+
+class OtpCode(SQLModel, table=True):
+    id: Optional[int] = Field(default=None, primary_key=True)
+    phone: str = Field(unique=True, index=True)
+    code_hash: str
+    expires_at: datetime
+    attempts: int = 0
+    created_at: datetime = Field(default_factory=utcnow)

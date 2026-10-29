@@ -121,3 +121,35 @@ class BolnaWebhook(SQLModel):
     extracted_data: Optional[Dict[str, Any]] = None
 
     model_config = {"extra": "allow"}
+
+
+# ---- Caregiver auth ----
+class OtpRequest(SQLModel):
+    phone: str
+
+
+class OtpRequestResponse(SQLModel):
+    ok: bool = True
+    code: Optional[str] = None
+
+
+class OtpVerify(SQLModel):
+    phone: str
+    code: str
+
+
+class GoogleAuthRequest(SQLModel):
+    id_token: str
+
+
+class CaregiverRead(SQLModel):
+    id: int
+    name: str
+    phone: Optional[str] = None
+    email: Optional[str] = None
+    created_at: datetime
+
+
+class AuthSession(SQLModel):
+    token: str
+    caregiver: CaregiverRead
