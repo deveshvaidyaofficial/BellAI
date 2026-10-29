@@ -1,8 +1,10 @@
 "use client";
 
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { FormEvent, useCallback, useState } from "react";
+import { ConfirmButton } from "@/components/ConfirmButton";
+import { ContactRow } from "@/components/ContactRow";
 import { ElderFields, readElderForm } from "@/components/ElderFields";
 import { TaskTable } from "@/components/TaskTable";
 import { api, errorText } from "@/lib/api";
@@ -11,6 +13,7 @@ import { usePolling } from "@/lib/usePolling";
 
 export default function ElderPage() {
   const id = Number(useParams<{ id: string }>().id);
+  const router = useRouter();
   const load = useCallback(
     () => Promise.all([api.getElder(id), api.listContacts(id), api.listTasks(id)]),
     [id],
@@ -18,6 +21,7 @@ export default function ElderPage() {
   const { data, error, reload } = usePolling(load);
   const [editing, setEditing] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   if (!data) return error ? <p className="error">{error}</p> : <p className="muted">Loading…</p>;
   const [elder, contacts, tasks] = data;
@@ -33,6 +37,17 @@ export default function ElderPage() {
       reload();
     } catch (err) {
       setFormError(errorText(err));
+    }
+  };
+
+  // 409 while they still have reminders; the API's message says so.
+  const deleteElder = async () => {
+    try {
+      setDeleteError(null);
+      await api.deleteElder(id);
+      router.push("/elders");
+    } catch (err) {
+      setDeleteError(errorText(err));
     }
   };
 
@@ -68,7 +83,11 @@ export default function ElderPage() {
       {editing ? (
         <form className="card" onSubmit={saveProfile}>
           <ElderFields elder={elder} />
-          <button className="btn primary">Save</button>
+          <div className="actions">
+            <button className="btn primary">Save</button>
+            <ConfirmButton label={`Delete ${elder.name}`} confirmLabel="Yes, delete" onConfirm={deleteElder} />
+          </div>
+          {deleteError && <p className="error">{deleteError}</p>}
         </form>
       ) : (
         <p className="muted">
@@ -90,14 +109,7 @@ export default function ElderPage() {
         <p className="muted small">Alerted when a reminder is missed or {elder.name} asks for help.</p>
         {contacts.length > 0 && (
           <ul className="rows">
-            {contacts.map((c) => (
-              <li key={c.id} className="row">
-                <div className="row-main">
-                  <span className="row-title">{c.name}</span>
-                  <span className="muted small">{c.phone}{c.relation && ` · ${c.relation}`}</span>
-                </div>
-              </li>
-            ))}
+            {contacts.map((c) => <ContactRow key={c.id} contact={c} onChange={reload} />)}
           </ul>
         )}
         <form className="inline-form" onSubmit={addContact}>
