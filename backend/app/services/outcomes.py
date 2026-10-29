@@ -8,8 +8,8 @@ The scheduler (also Ayush's) sets `calling` before the call is placed.
 See the status lifecycle in AGENTS.md.
 """
 
-from datetime import timedelta
-from typing import Optional
+from datetime import datetime, timedelta
+from typing import Any, Optional
 
 from sqlmodel import Session
 
@@ -49,32 +49,63 @@ def classify(provider_status: Optional[str], extracted_outcome: Optional[str]) -
     return CallOutcome.needs_help
 
 
+MIN_SNOOZE_MINUTES = 5
+MAX_SNOOZE_MINUTES = 240
+
+
+def snooze_minutes_from(raw: Any) -> int:
+    """The agent's extracted snooze value, clamped. Missing or junk → the default."""
+    try:
+        minutes = int(raw)
+    except (TypeError, ValueError):
+        return DEFAULT_SNOOZE_MINUTES
+    return min(max(minutes, MIN_SNOOZE_MINUTES), MAX_SNOOZE_MINUTES)
+
+
+def roll_to_next_occurrence(task: Task, now: datetime) -> None:
+    """Move a recurring task to its next planned time after `now`."""
+    step = timedelta(days=1 if task.recurrence == Recurrence.daily else 7)
+    nxt = (task.occurrence_at or task.scheduled_at) + step
+    while nxt <= now:
+        nxt += step
+    task.occurrence_at = nxt
+    task.scheduled_at = nxt
+    task.attempts = 0
+
+
 def apply_outcome(
     session: Session,
     task: Task,
     outcome: CallOutcome,
-    snooze_minutes: Optional[int] = None,
+    snooze_minutes: Any = None,
 ) -> Task:
+    """Apply a call result to a task.
+
+    Recurring tasks never stop: after `needs_help` or the final missed attempt the
+    caregiver is alerted, the task shows `needs_help` / `missed`, and it is
+    already rolled to its next occurrence, where the scheduler picks it up again.
+    """
     now = utcnow()
+    recurring = task.recurrence != Recurrence.none
 
     if outcome == CallOutcome.completed:
-        if task.recurrence == Recurrence.none:
-            task.status = TaskStatus.completed
-        else:
-            step = timedelta(days=1 if task.recurrence == Recurrence.daily else 7)
-            task.scheduled_at = task.scheduled_at + step
-            while task.scheduled_at <= now:
-                task.scheduled_at += step
+        if recurring:
+            roll_to_next_occurrence(task, now)
             task.status = TaskStatus.pending
-        task.attempts = 0
+        else:
+            task.status = TaskStatus.completed
+            task.attempts = 0
 
     elif outcome == CallOutcome.later:
-        task.scheduled_at = now + timedelta(minutes=snooze_minutes or DEFAULT_SNOOZE_MINUTES)
+        task.scheduled_at = now + timedelta(minutes=snooze_minutes_from(snooze_minutes))
         task.status = TaskStatus.snoozed
+        task.attempts = 0  # they picked up; retries count unanswered calls only
 
     elif outcome == CallOutcome.needs_help:
         task.status = TaskStatus.needs_help
         notify_caregivers(session, task, "elder asked for help")
+        if recurring:
+            roll_to_next_occurrence(task, now)
 
     elif outcome == CallOutcome.no_answer:
         if task.attempts < task.max_attempts:
@@ -83,6 +114,8 @@ def apply_outcome(
         else:
             task.status = TaskStatus.missed
             notify_caregivers(session, task, f"no answer after {task.attempts} attempts")
+            if recurring:
+                roll_to_next_occurrence(task, now)
 
     session.add(task)
     return task

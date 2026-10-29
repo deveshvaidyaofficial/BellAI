@@ -69,6 +69,9 @@ class Task(SQLModel, table=True):
     title: str  # e.g. "Take Metformin 500mg"
     details: Optional[str] = None  # e.g. "after breakfast, with water"
     scheduled_at: datetime = Field(index=True)  # next due time, naive UTC
+    # Planned time of the current occurrence. scheduled_at moves with snoozes and
+    # retries; this does not, so recurring reminders don't drift. Internal only.
+    occurrence_at: Optional[datetime] = None
     recurrence: Recurrence = Recurrence.none
     status: TaskStatus = Field(default=TaskStatus.pending, index=True)
     attempts: int = 0
