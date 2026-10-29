@@ -20,6 +20,8 @@ export interface Elder extends Required<ElderCreate> {
   created_at: string;
 }
 
+export type ElderUpdate = Partial<ElderCreate>;
+
 export interface ContactCreate {
   name: string;
   phone: string;
@@ -49,6 +51,9 @@ export interface Task extends Required<TaskCreate> {
   attempts: number;
   created_at: string;
 }
+
+// The only status a client may set is "pending" (reopen / reset a stuck call).
+export type TaskUpdate = Partial<Omit<TaskCreate, "elder_id">> & { status?: "pending" };
 
 export interface CallLog {
   id: number;

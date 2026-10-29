@@ -1,24 +1,20 @@
 import type { Metadata } from "next";
-import Link from "next/link";
+import { Instrument_Sans } from "next/font/google";
+import { AuthProvider } from "@/components/AuthProvider";
 import "./globals.css";
+
+const font = Instrument_Sans({ subsets: ["latin"], weight: ["400", "500", "600"] });
 
 export const metadata: Metadata = {
   title: "BellAI",
-  description: "Voice reminders that help elders live independently",
+  description: "A friendly voice that remembers for you",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>
-        <header className="nav">
-          <Link href="/" className="brand">🔔 BellAI</Link>
-          <nav>
-            <Link href="/elders/new">Add elder</Link>
-            <Link href="/tasks/new">Add reminder</Link>
-          </nav>
-        </header>
-        <main>{children}</main>
+      <body className={font.className}>
+        <AuthProvider>{children}</AuthProvider>
       </body>
     </html>
   );
