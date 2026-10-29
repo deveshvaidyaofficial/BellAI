@@ -61,3 +61,34 @@ export interface CallLog {
   created_at: string;
   updated_at: string;
 }
+
+export interface Caregiver {
+  id: number;
+  name: string;
+  phone: string | null;
+  email: string | null;
+  created_at: string;
+}
+
+export interface OtpRequest {
+  phone: string;
+}
+
+export interface OtpRequestResponse {
+  ok: boolean;
+  code?: string | null;
+}
+
+export interface OtpVerify {
+  phone: string;
+  code: string;
+}
+
+export interface GoogleAuthRequest {
+  id_token: string;
+}
+
+export interface AuthSession {
+  token: string;
+  caregiver: Caregiver;
+}

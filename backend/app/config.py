@@ -19,6 +19,10 @@ class Settings(BaseSettings):
 
     frontend_origin: str = "http://localhost:3000"
 
+    google_client_id: str = ""
+    auth_secret: str = "dev-only-change-me"
+    otp_mock: bool = True
+
 
 @lru_cache
 def get_settings() -> Settings:
