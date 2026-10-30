@@ -23,6 +23,7 @@ When BellAI initiates a call via `POST https://api.bolna.ai/call`, it injects th
 | Variable | Type | Description | Example |
 | :--- | :--- | :--- | :--- |
 | `elder_name` | string | Elder's first or full name | `Asha` |
+| `user_name` | string | Alias for elder's name (for dashboard prompt compatibility) | `Asha` |
 | `language` | string | Preferred language code (`en` or `hi`) | `hi` |
 | `task_type` | string | Category of reminder (`medication`, `appointment`, `meal`, `hydration`, `other`) | `medication` |
 | `task_title` | string | Short reminder description | `Take BP tablet (Amlodipine 5mg)` |

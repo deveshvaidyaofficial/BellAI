@@ -51,6 +51,8 @@ def test_build_user_data_contains_expected_fields(test_elder, test_task):
     data = build_user_data(test_elder, test_task)
     assert data == {
         "elder_name": "Asha Sharma",
+        "user_name": "Asha Sharma",
+        "name": "Asha Sharma",
         "language": "hi",
         "task_type": "medication",
         "task_title": "Take Blood Pressure Tablet",

@@ -26,9 +26,11 @@ class BolnaError(Exception):
 
 
 def build_user_data(elder: Elder, task: Task) -> Dict[str, Any]:
-    """Variables injected into the agent prompt ({elder_name}, {task_title}, ...)."""
+    """Variables injected into the agent prompt ({elder_name}, {user_name}, {task_title}, ...)."""
     return {
         "elder_name": elder.name,
+        "user_name": elder.name,
+        "name": elder.name,
         "language": elder.language,
         "task_type": task.type.value,
         "task_title": task.title,
