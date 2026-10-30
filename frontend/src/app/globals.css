@@ -158,3 +158,17 @@ fieldset.inline input { width: auto; }
 .sk-pill { height: 26px; width: 84px; border-radius: 999px; }
 @keyframes sk { to { background-position: -200% 0; } }
 @media (prefers-reduced-motion: reduce) { .sk { animation: none; } }
+
+/* people: remove button + confirm dialog */
+.person { position: relative; }
+.person .tile h2 { padding-right: 84px; overflow-wrap: anywhere; }
+.person-remove { position: absolute; top: 14px; right: 14px; padding: 6px 12px; font-size: 14px; background: var(--card); }
+.person-remove::before { content: ""; position: absolute; inset: -6px -5px; } /* 44px+ tap target, same look */
+.person-remove:hover { color: var(--bad); border-color: var(--bad-bg); }
+.btn[aria-disabled="true"] { opacity: 0.55; cursor: default; }
+dialog.confirm { width: min(440px, calc(100vw - 32px)); border: 1px solid var(--line); border-radius: 20px; padding: 0; background: var(--card); color: var(--ink); box-shadow: 0 24px 60px rgba(43, 43, 43, 0.18); }
+dialog.confirm::backdrop { background: rgba(43, 43, 43, 0.35); }
+.confirm-body { padding: 24px; }
+dialog.confirm h2 { font-size: 20px; margin-bottom: 8px; }
+dialog.confirm p { margin: 0 0 10px; }
+dialog.confirm .actions { margin-top: 18px; }
