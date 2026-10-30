@@ -10,6 +10,7 @@ import { TaskTable } from "@/components/TaskTable";
 import { api, errorText } from "@/lib/api";
 import { callWindow, isValidPhone, LANGUAGES, normalizePhone } from "@/lib/format";
 import { usePolling } from "@/lib/usePolling";
+import { Skeleton } from "@/components/Skeleton";
 
 export default function ElderPage() {
   const id = Number(useParams<{ id: string }>().id);
@@ -23,7 +24,7 @@ export default function ElderPage() {
   const [formError, setFormError] = useState<string | null>(null);
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  if (!data) return error ? <p className="error">{error}</p> : <p className="muted">Loading…</p>;
+  if (!data) return error ? <p className="error">{error}</p> : <Skeleton />;
   const [elder, contacts, tasks] = data;
 
   const saveProfile = async (e: FormEvent<HTMLFormElement>) => {
@@ -104,7 +105,7 @@ export default function ElderPage() {
         <TaskTable tasks={tasks} onChange={reload} empty="No reminders yet." />
       </section>
 
-      <section className="card">
+      <section className="card" id="contacts">
         <h2>Family contacts</h2>
         <p className="muted small">Alerted when a reminder is missed or {elder.name} asks for help.</p>
         {contacts.length > 0 && (

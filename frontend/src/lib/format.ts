@@ -33,6 +33,16 @@ export const STATUS_LABEL: Record<TaskStatus, string> = {
   missed: "Missed",
 };
 
+/** One-line meaning of each status, shown as a tooltip and on the how-it-works page. */
+export const STATUS_HELP: Record<TaskStatus, string> = {
+  pending: "Waiting for its time. BellAI will call then.",
+  calling: "The phone is ringing or they are talking right now.",
+  completed: "They confirmed it.",
+  snoozed: "They asked to be called later. BellAI will ring back.",
+  needs_help: "They asked for help on the call. Family has been alerted.",
+  missed: "No answer after every try. Family has been alerted.",
+};
+
 export const OUTCOME_LABEL: Record<CallOutcome, string> = {
   completed: "Confirmed",
   later: "Asked to call later",

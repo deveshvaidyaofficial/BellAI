@@ -7,6 +7,7 @@ import { useAuth } from "@/components/AuthProvider";
 import { api, ApiError, errorText } from "@/lib/api";
 import { isValidPhone, normalizePhone } from "@/lib/format";
 import type { AuthSession } from "@/lib/types";
+import { Skeleton } from "@/components/Skeleton";
 
 const GOOGLE_CLIENT_ID = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID ?? "";
 const RESEND_SECONDS = 30;
@@ -27,7 +28,9 @@ declare global {
 
 function LoginForm() {
   const router = useRouter();
-  const next = useSearchParams().get("next") || "/";
+  const asked = useSearchParams().get("next") || "";
+  // Only same-site paths; "//host" would leave the site.
+  const next = asked.startsWith("/") && !asked.startsWith("//") && asked !== "/" ? asked : "/dashboard";
   const { caregiver, signIn } = useAuth();
 
   const [phone, setPhone] = useState("");
@@ -40,7 +43,7 @@ function LoginForm() {
   const googleButton = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
-    if (caregiver) router.replace(next.startsWith("/") ? next : "/");
+    if (caregiver) router.replace(next);
   }, [caregiver, next, router]);
 
   useEffect(() => {
@@ -154,7 +157,7 @@ function LoginForm() {
 
 export default function Login() {
   return (
-    <Suspense fallback={<p className="muted">Loading…</p>}>
+    <Suspense fallback={<Skeleton />}>
       <LoginForm />
     </Suspense>
   );
