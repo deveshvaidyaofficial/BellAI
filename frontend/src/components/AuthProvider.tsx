@@ -18,7 +18,7 @@ interface Auth {
 const AuthContext = createContext<Auth>({ caregiver: null, signIn: () => {}, signOut: () => {} });
 export const useAuth = () => useContext(AuthContext);
 
-const PUBLIC_PATHS = ["/", "/how-it-works", "/login"];
+const PUBLIC_PATHS = ["/", "/how-it-works", "/login", "/signout"];
 // Public pages with their own header and layout.
 const SITE_PATHS = ["/", "/how-it-works"];
 
@@ -55,7 +55,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(() => {
     setToken(null);
-    window.location.assign("/"); // full reload so no signed-in screen lingers
+    window.location.assign("/signout"); // full reload so no signed-in screen lingers
   }, []);
 
   const ready = isPublic || caregiver;
