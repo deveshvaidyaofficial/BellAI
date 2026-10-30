@@ -1,8 +1,9 @@
 import type { Metadata } from "next";
-import { ArrowRight, Clock, Globe, Moon, Phone, RefreshCw } from "lucide-react";
+import { ArrowRight, Captions, Clock, Globe, Moon, Phone, RefreshCw } from "lucide-react";
 import { LandingCta } from "@/components/LandingCta";
 import { SiteFooter, SiteHeader } from "@/components/SiteChrome";
 import { StatusBadge } from "@/components/StatusBadge";
+import { IntroVideo } from "@/components/site/IntroVideo";
 import { STATUS_HELP } from "@/lib/format";
 import type { TaskStatus } from "@/lib/types";
 import "../landing.css";
@@ -54,6 +55,16 @@ export default function HowItWorks() {
   return (
     <div className="landing docs">
       <SiteHeader />
+
+      <section id="intro-video" className="wrap iv" aria-labelledby="intro-video-title">
+        <div className="iv-head">
+          <p className="eyebrow">Watch first</p>
+          <p className="iv-title" id="intro-video-title">BellAI in <em>60 seconds.</em></p>
+          <p className="iv-sub">One reminder, one real call, and what you see afterwards.</p>
+        </div>
+        <IntroVideo />
+        <p className="iv-note"><Captions size={16} aria-hidden="true" />Every word is on screen, so it works muted.</p>
+      </section>
 
       <header className="wrap docs-hero">
         <p className="eyebrow">How it works</p>
