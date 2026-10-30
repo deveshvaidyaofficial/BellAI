@@ -7,7 +7,7 @@ import { useEffect, useState } from "react";
 type Stage = "incoming" | "talking" | "done";
 
 const LINES: { who: "bell" | "her"; text: string }[] = [
-  { who: "bell", text: "Good morning, Savitri! It’s time for your blood pressure tablet." },
+  { who: "bell", text: "Good morning, Meera! It’s time for your blood pressure tablet." },
   { who: "her", text: "Oh yes. The small white one?" },
   { who: "bell", text: "That’s right, from the box marked morning. Have you taken it?" },
   { who: "her", text: "Done. Thank you, dear." },
@@ -42,7 +42,7 @@ export function IPhoneCall() {
 
   return (
     <div className="phone-demo">
-    <div className="iphone" role="img" aria-label="An iPhone receiving a call from BellAI. BellAI reminds Savitri about her blood pressure tablet, she confirms, and her daughter Priya is told.">
+    <div className="iphone" role="img" aria-label="An iPhone receiving a call from BellAI. BellAI reminds Meera about her blood pressure tablet, she confirms, and her daughter Priya is told.">
       <div className="iphone-screen">
         <div className="iphone-status">
           <span className="st-time">8:00</span>
@@ -117,7 +117,7 @@ export function IPhoneCall() {
               <span className="caller-sub">Blood pressure tablet · 8:01 am</span>
               <motion.div className="notif" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.6 }}>
                 <span className="notif-icon"><BellRing size={14} /></span>
-                <span><b>Priya has been told</b>Savitri took her 8:00 tablet.</span>
+                <span><b>Priya has been told</b>Meera took her 8:00 tablet.</span>
               </motion.div>
             </motion.div>
           )}
