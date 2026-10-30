@@ -14,6 +14,12 @@ export function CallList({ calls, tasks, empty = "No calls yet." }: { calls: Cal
             {tasks && <span className="row-title">{title(c.task_id)}</span>}
             <span className="muted small">{parseUtc(c.created_at).toLocaleString()}</span>
             {c.summary && <p className="summary">{c.summary}</p>}
+            {c.extracted_note && (
+              <p className="summary small">
+                <span className="muted">Note: </span>
+                {c.extracted_note}
+              </p>
+            )}
             {c.delivery_result && (
               <span className={`small ${c.delivery_result === "sent" ? "ok" : "error"}`}>
                 {c.delivery_result === "sent" ? "Family alerted" : `Family alert ${c.delivery_result}`}

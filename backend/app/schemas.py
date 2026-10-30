@@ -102,6 +102,7 @@ class CallLogRead(SQLModel):
     outcome: Optional[CallOutcome]
     transcript: Optional[str]
     summary: Optional[str]
+    extracted_note: Optional[str] = None
     delivery_result: Optional[str] = None
     created_at: datetime
     updated_at: datetime
@@ -115,13 +116,22 @@ class BolnaWebhook(SQLModel):
       {"outcome": "completed" | "later" | "needs_help", "snooze_minutes": 30, "note": "..."}
     """
 
-    id: str  # Bolna execution / call id
+    id: Optional[str] = None  # Bolna execution / call id
+    execution_id: Optional[str] = None  # Provider alternative key
     status: Optional[str] = None  # completed, no-answer, busy, failed, ...
     transcript: Optional[str] = None
     summary: Optional[str] = None
     extracted_data: Optional[Dict[str, Any]] = None
 
     model_config = {"extra": "allow"}
+
+    @property
+    def call_id(self) -> Optional[str]:
+        raw = self.execution_id or self.id
+        if raw is None:
+            return None
+        text = str(raw).strip()
+        return text or None
 
 
 # ---- Caregiver auth ----

@@ -88,6 +88,7 @@ class CallLog(SQLModel, table=True):
     outcome: Optional[CallOutcome] = None
     transcript: Optional[str] = None
     summary: Optional[str] = None
+    extracted_note: Optional[str] = None
     delivery_result: Optional[str] = None
     created_at: datetime = Field(default_factory=utcnow)
     updated_at: datetime = Field(default_factory=utcnow)

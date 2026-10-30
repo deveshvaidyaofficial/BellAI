@@ -63,6 +63,7 @@ export interface CallLog {
   outcome: CallOutcome | null;
   transcript: string | null;
   summary: string | null;
+  extracted_note?: string | null;
   delivery_result?: string | null;
   created_at: string;
   updated_at: string;
