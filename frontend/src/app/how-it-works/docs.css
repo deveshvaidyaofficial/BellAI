@@ -62,3 +62,31 @@
   .d-tr { grid-template-columns: 1fr; gap: 6px; }
   .d-legend div { grid-template-columns: 1fr; gap: 6px; }
 }
+
+/* ---------- intro video ---------- */
+.iv { padding-top: var(--s4); display: grid; justify-items: center; text-align: center; }
+.iv-head { max-width: 640px; }
+.landing .iv .iv-title { font-size: clamp(24px, 2.4vw, 32px); font-weight: 500; letter-spacing: -.03em; line-height: 1.1; margin: 0 0 var(--s1); }
+.landing .iv .iv-title em { font-style: normal; color: var(--accent); }
+.iv-sub { color: var(--mute); font-size: 16px; margin: 0 0 var(--s3); }
+.landing .iv .eyebrow { font-size: 13px; margin-bottom: var(--s1); }
+.iv-stage { position: relative; width: 100%; transform-origin: 50% 100%; will-change: transform; }
+.iv-glow { position: absolute; inset: 0; border-radius: var(--r-xl); box-shadow: 0 2px 4px rgba(40, 25, 10, .05), 0 40px 80px -36px rgba(40, 25, 10, .42); pointer-events: none; will-change: opacity; }
+.iv-frame { position: relative; width: 100%; aspect-ratio: 848 / 480; border-radius: var(--r-xl); overflow: hidden; background: var(--bg); border: 1px solid var(--line); }
+.iv-video { display: block; width: 100%; height: 100%; object-fit: contain; background: var(--bg); }
+.iv-unmute { position: absolute; top: var(--s2); right: var(--s2); display: inline-flex; align-items: center; gap: 8px; min-height: 44px; padding: 0 16px; border: 0; border-radius: 999px; background: rgba(35, 33, 32, .86); color: var(--btn-ink); font: inherit; font-size: 14px; font-weight: 500; cursor: pointer; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); box-shadow: 0 8px 20px -10px rgba(35, 33, 32, .6); transition: background .2s, transform .2s var(--ease); }
+.iv-unmute:hover { background: var(--btn); transform: translateY(-1px); }
+@media (prefers-reduced-motion: no-preference) { .iv-frame { animation: iv-in .6s var(--ease) both; } }
+@media (prefers-reduced-motion: reduce) { .iv-stage { transform: none !important; will-change: auto; } .iv-glow { opacity: 1 !important; } }
+@keyframes iv-in { from { opacity: 0; transform: translateY(24px); } to { opacity: 1; transform: none; } }
+.iv-note { display: inline-flex; align-items: center; gap: 8px; margin: var(--s2) 0 0; color: var(--mute); font-size: 14px; }
+.iv-note svg { color: var(--accent); flex: none; }
+
+@media (max-width: 760px) {
+  .iv { padding-top: var(--s3); }
+  .iv-sub { font-size: 15px; margin-bottom: var(--s2); }
+  .iv-stage { width: calc(100% + 40px); margin-inline: -20px; }
+  .iv-frame, .iv-glow { border-radius: var(--r-sm); }
+  .iv-note { font-size: 13px; text-wrap: balance; }
+  .iv-unmute { top: 10px; right: 10px; min-height: 44px; padding: 0 14px; font-size: 13px; }
+}
