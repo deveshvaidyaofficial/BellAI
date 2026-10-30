@@ -4,7 +4,9 @@ Bell AI is an AI-based voice assistant that helps elderly people live independen
 
 ### Introduction Video
 
-[![Watch the BellAI intro video (60s)](docs/assets/intro-video-thumb.jpg)]([frontend/public/videos/intro.mp4](https://bellai-app.vercel.app/videos/intro.webm))
+<a href="https://bellai-app.vercel.app/videos/intro.webm" target="_blank">
+  <img src="docs/assets/intro-video-thumb.jpg" alt="Watch the BellAI intro video (60s)">
+</a>
 
 *60-second overview: setting up a reminder, a real BellAI call, and what the family sees afterwards. Click the image to play.*
 
