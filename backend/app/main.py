@@ -37,6 +37,7 @@ app.include_router(calls.router)
 app.include_router(webhooks.router)
 
 
+@app.get("/")
 @app.get("/health")
 def health():
     return {"status": "ok"}
