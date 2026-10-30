@@ -15,7 +15,7 @@ export function TaskTable({
   tasks: Task[];
   elders?: Elder[];
   onChange: () => void;
-  empty?: string;
+  empty?: React.ReactNode;
 }) {
   if (tasks.length === 0) return <p className="muted">{empty}</p>;
   const elderName = (id: number) => elders?.find((e) => e.id === id)?.name;

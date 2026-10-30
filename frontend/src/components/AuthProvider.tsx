@@ -5,7 +5,9 @@ import { usePathname, useRouter } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { getToken, setToken } from "@/lib/session";
+import { BellLogo } from "./BellLogo";
 import type { AuthSession, Caregiver } from "@/lib/types";
+import { Skeleton } from "./Skeleton";
 
 interface Auth {
   caregiver: Caregiver | null;
@@ -16,7 +18,9 @@ interface Auth {
 const AuthContext = createContext<Auth>({ caregiver: null, signIn: () => {}, signOut: () => {} });
 export const useAuth = () => useContext(AuthContext);
 
-const PUBLIC_PATHS = ["/login"];
+const PUBLIC_PATHS = ["/", "/how-it-works", "/login"];
+// Public pages with their own header and layout.
+const SITE_PATHS = ["/", "/how-it-works"];
 
 /**
  * Keeps the signed-in caregiver and sends everyone else to /login.
@@ -51,19 +55,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(() => {
     setToken(null);
-    setCaregiver(null);
+    window.location.assign("/"); // full reload so no signed-in screen lingers
   }, []);
 
   const ready = isPublic || caregiver;
+  const value = { caregiver: caregiver ?? null, signIn, signOut };
+  if (SITE_PATHS.includes(pathname)) return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+
+  const link = (href: string, label: string) => (
+    <Link href={href} className={pathname === href || pathname.startsWith(href + "/") ? "current" : undefined}>{label}</Link>
+  );
   return (
-    <AuthContext.Provider value={{ caregiver: caregiver ?? null, signIn, signOut }}>
+    <AuthContext.Provider value={value}>
       <header className="nav">
-        <Link href="/" className="brand">BellAI</Link>
+        <Link href="/" className="brand" aria-label="BellAI home"><BellLogo />BellAI</Link>
         {caregiver && (
           <nav>
-            <Link href="/">Today</Link>
-            <Link href="/elders">People</Link>
-            <Link href="/calls">Calls</Link>
+            {link("/dashboard", "Today")}
+            {link("/elders", "People")}
+            {link("/calls", "Calls")}
+            {link("/how-it-works", "Help")}
             <Link href="/tasks/new" className="btn primary">Add reminder</Link>
             <button className="btn ghost" onClick={signOut} title={caregiver.phone ?? caregiver.email ?? ""}>
               Sign out
@@ -71,7 +82,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           </nav>
         )}
       </header>
-      <main>{ready ? children : <p className="muted">Loading…</p>}</main>
+      <main>{ready ? children : <Skeleton />}</main>
     </AuthContext.Provider>
   );
 }

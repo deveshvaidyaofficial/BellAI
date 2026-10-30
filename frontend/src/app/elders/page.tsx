@@ -5,12 +5,13 @@ import { StatusBadge } from "@/components/StatusBadge";
 import { api } from "@/lib/api";
 import { LANGUAGES, needsAttention } from "@/lib/format";
 import { usePolling } from "@/lib/usePolling";
+import { Skeleton } from "@/components/Skeleton";
 
 const load = () => Promise.all([api.listElders(), api.listTasks()]);
 
 export default function Elders() {
   const { data, error } = usePolling(load, 10000);
-  if (!data) return error ? <p className="error">{error}</p> : <p className="muted">Loading…</p>;
+  if (!data) return error ? <p className="error">{error}</p> : <Skeleton />;
   const [elders, tasks] = data;
 
   return (

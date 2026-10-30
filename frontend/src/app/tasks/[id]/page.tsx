@@ -10,6 +10,7 @@ import { api, errorText } from "@/lib/api";
 import { callWindow, fromLocalInput, hasNextCall, RECURRENCE_LABEL, toLocalInput, TYPE_LABEL, when } from "@/lib/format";
 import type { Recurrence, TaskType } from "@/lib/types";
 import { usePolling } from "@/lib/usePolling";
+import { Skeleton } from "@/components/Skeleton";
 
 export default function TaskPage() {
   const id = Number(useParams<{ id: string }>().id);
@@ -22,7 +23,7 @@ export default function TaskPage() {
   const [editing, setEditing] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
 
-  if (!data) return error ? <p className="error">{error}</p> : <p className="muted">Loading…</p>;
+  if (!data) return error ? <p className="error">{error}</p> : <Skeleton />;
   const { task, calls, elder } = data;
 
   const save = async (e: FormEvent<HTMLFormElement>) => {

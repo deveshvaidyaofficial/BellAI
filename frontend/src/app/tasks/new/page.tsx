@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { api, errorText } from "@/lib/api";
 import { RECURRENCE_LABEL, TYPE_LABEL } from "@/lib/format";
 import type { Elder, Recurrence, TaskType } from "@/lib/types";
+import { Skeleton } from "@/components/Skeleton";
 
 const pad = (n: number) => String(n).padStart(2, "0");
 const today = () => {
@@ -91,7 +92,7 @@ function NewTaskForm() {
     }
   };
 
-  if (!elders) return error ? <p className="error">{error}</p> : <p className="muted">Loading…</p>;
+  if (!elders) return error ? <p className="error">{error}</p> : <Skeleton />;
   if (elders.length === 0) {
     return <p>Add the person Bell should call first. <Link href="/elders/new" className="btn primary">Add a person</Link></p>;
   }
@@ -179,7 +180,7 @@ function NewTaskForm() {
 
 export default function NewTask() {
   return (
-    <Suspense fallback={<p className="muted">Loading…</p>}>
+    <Suspense fallback={<Skeleton />}>
       <NewTaskForm />
     </Suspense>
   );
