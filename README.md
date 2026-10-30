@@ -4,11 +4,9 @@ Bell AI is an AI-based voice assistant that helps elderly people live independen
 
 ### Introduction Video
 
-<a href="https://bellai-app.vercel.app/videos/intro.webm" target="_blank">
-  <img src="docs/assets/intro-video-thumb.jpg" alt="Watch the BellAI intro video (60s)">
-</a>
+![BellAI intro video preview](docs/assets/intro-preview.webp)
 
-*60-second overview: setting up a reminder, a real BellAI call, and what the family sees afterwards. Click the image to play.*
+*A quick look at BellAI: setting up a reminder, a real call, and what the family sees afterwards.*
 
 **Team:** Ayush (caregiver UI, scheduler, retries) · Devesh (voice agent and outbound calls) · Utkarsh (webhooks, outcomes, caregiver alerts, elder and call-log API)
 
