@@ -7,10 +7,10 @@ import { useEffect, useState } from "react";
 type Mode = "open" | "min" | "closed" | "full";
 
 const ROWS = {
-  attention: [{ title: "Evening walk", sub: "Sarah · no answer after 3 tries", chip: "Missed", tone: "bad" }],
+  attention: [{ title: "Evening walk", sub: "Savitri · no answer after 3 tries", chip: "Missed", tone: "bad" }],
   upcoming: [
-    { title: "Drink a glass of water", sub: "Sarah · today, 3:30 pm", chip: "Scheduled", tone: "" },
-    { title: "Eye check-up with Dr. Rao", sub: "Sarah · tomorrow, 9:00 am", chip: "Scheduled", tone: "" },
+    { title: "Drink a glass of water", sub: "Savitri · today, 3:30 pm", chip: "Scheduled", tone: "" },
+    { title: "Eye check-up with Dr. Rao", sub: "Savitri · tomorrow, 9:00 am", chip: "Scheduled", tone: "" },
   ],
   calls: [{ title: "Blood pressure tablet", sub: "“Done. Thank you, dear.”", chip: "Confirmed", tone: "ok" }],
 };
