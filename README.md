@@ -1,8 +1,8 @@
-# BellAI
+# BellAI - An Asistant That Cares 
 
 Bell AI is an AI-based voice assistant that helps elderly people live independently. It places automated calls to remind them to take medicines on time, attend medical appointments, and complete other essential tasks. Voice AI keeps the conversation natural, so they can respond to reminders, ask questions and confirm tasks are done.
 
-### Intro video
+### Introduction Video
 
 [![Watch the BellAI intro video (60s)](docs/assets/intro-video-thumb.jpg)](frontend/public/videos/intro.mp4)
 
